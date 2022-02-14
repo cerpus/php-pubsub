@@ -1,0 +1,5 @@
+vendor
+*.cache
+.idea
+composer.lock
+xdebug-filter.php

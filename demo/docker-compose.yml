@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+    listener:
+        build:
+            context: ..
+            target: base
+        command: [php, listener.php]
+        environment:
+            RABBITMQ_HOST: mq
+            RABBITMQ_PORT: 5672
+            RABBITMQ_USERNAME: guest
+            RABBITMQ_PASSWORD: guest
+        volumes:
+            - ../:/app
+        working_dir: /app/demo
+
+    web:
+        build:
+            context: ..
+            target: base
+        command: [php, -S, 0.0.0.0:8080, -t, .]
+        environment:
+            RABBITMQ_HOST: mq
+            RABBITMQ_PORT: 5672
+            RABBITMQ_USERNAME: guest
+            RABBITMQ_PASSWORD: guest
+        ports:
+            - '8080:8080'
+        volumes:
+            - ../:/app
+        working_dir: /app/demo
+
+    mq:
+        image: rabbitmq:3-alpine
