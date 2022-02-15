@@ -12,6 +12,7 @@ use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 final class PhpAmqpLibConnection implements ConnectionInterface
 {
@@ -23,8 +24,10 @@ final class PhpAmqpLibConnection implements ConnectionInterface
 
     private AbstractChannel $channel;
 
-    public function __construct(private AbstractConnection $connection)
-    {
+    public function __construct(
+        private AbstractConnection $connection,
+        private LoggerInterface|null $logger = null,
+    ) {
         $this->channel = $this->connection->channel();
     }
 
@@ -113,7 +116,9 @@ final class PhpAmqpLibConnection implements ConnectionInterface
                 $this->connection->close();
             }
         } catch (AMQPExceptionInterface $e) {
-            throw new RuntimeException($e->getMessage(), $e->getCode(), $e);
+            $this->logger?->warning('Failed to close connection', [
+                'exception' => $e,
+            ]);
         }
     }
 }
