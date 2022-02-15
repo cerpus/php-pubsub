@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Cerpus\PubSub\Connection;
 
-use Cerpus\PubSub\Exception\DuplicateSubscriptionException;
 use Closure;
 
 interface ConnectionInterface
 {
     public function publish(string $topic, string $data): void;
 
-    /**
-     * @throws DuplicateSubscriptionException
-     */
     public function subscribe(string $name, string $topic, Closure $handler): void;
 
     /**

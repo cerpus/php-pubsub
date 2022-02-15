@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cerpus\PubSub;
 
 use Cerpus\PubSub\Connection\ConnectionInterface;
-use Cerpus\PubSub\Exception\DuplicateSubscriptionException;
 use Closure;
 
 class PubSub
@@ -22,7 +21,6 @@ class PubSub
 
     /**
      * @param Closure(string):void $handler
-     * @throws DuplicateSubscriptionException
      */
     public function subscribe(
         string $name,
