@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cerpus\PubSub\Connection;
 
-use Cerpus\PubSub\Exception\DuplicateSubscriptionException;
 use Cerpus\PubSub\Exception\RuntimeException;
 use Closure;
 use PhpAmqpLib\Channel\AbstractChannel;
@@ -12,28 +11,21 @@ use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 final class PhpAmqpLibConnection implements ConnectionInterface
 {
-    /** @var array<string> */
-    private array $declaredTopics = [];
-
-    /** @var array<string> */
-    private array $declaredSubscriptions = [];
-
     private AbstractChannel $channel;
 
-    public function __construct(private AbstractConnection $connection)
-    {
+    public function __construct(
+        private AbstractConnection $connection,
+        private LoggerInterface|null $logger = null,
+    ) {
         $this->channel = $this->connection->channel();
     }
 
     public function declareTopic(string $topic): void
     {
-        if (isset($this->declaredTopics[$topic])) {
-            return;
-        }
-
         try {
             $this->channel->exchange_declare(
                 $topic,
@@ -45,8 +37,6 @@ final class PhpAmqpLibConnection implements ConnectionInterface
         } catch (AMQPExceptionInterface $e) {
             throw new RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->declaredTopics[$topic] = true;
     }
 
     public function subscribe(
@@ -54,10 +44,6 @@ final class PhpAmqpLibConnection implements ConnectionInterface
         string $topic,
         Closure $handler
     ): void {
-        if (isset($this->declaredSubscriptions[$name])) {
-            throw new DuplicateSubscriptionException();
-        }
-
         $callback = function (AMQPMessage $msg) use ($handler): void {
             $handler($msg->body);
             $msg->ack();
@@ -113,7 +99,9 @@ final class PhpAmqpLibConnection implements ConnectionInterface
                 $this->connection->close();
             }
         } catch (AMQPExceptionInterface $e) {
-            throw new RuntimeException($e->getMessage(), $e->getCode(), $e);
+            $this->logger?->warning('Failed to close connection', [
+                'exception' => $e,
+            ]);
         }
     }
 }
