@@ -16,6 +16,9 @@ if (($topic = ($_POST['topic'] ?? false)) && ($data = ($_POST['data'] ?? false))
 <!DOCTYPE html>
 <meta charset="utf-8">
 <form action="" method="POST">
+    <blockquote>
+        <p><em>Use <kbd>add_topic</kbd> to subscribe to a topic with the given name</em>
+    </blockquote>
     <p><label>Topic <input type="text" name="topic"></label>
     <p><label>Data<br>
         <textarea name="data" rows="8" cols="50" placeholder="Send some data..."></textarea>

@@ -6,6 +6,9 @@ services:
             context: ..
             target: base
         command: [php, listener.php]
+        depends_on:
+            mq:
+                condition: service_healthy
         environment:
             RABBITMQ_HOST: mq
             RABBITMQ_PORT: 5672
@@ -33,3 +36,5 @@ services:
 
     mq:
         image: rabbitmq:3-alpine
+        healthcheck:
+            test: [CMD, rabbitmq-diagnostics, -q, ping]
